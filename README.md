@@ -1,2 +1,2 @@
 # MaleAAGenerator
-Automates part of the process of female to male armor conversion
+Automates plugin generation for female to male armor conversion
