@@ -28,6 +28,7 @@ namespace MaleAAGenerator
              if (Settings.Value.TargetMods.Count == 0)
             {
                 System.Console.WriteLine("Must at least specify one target mod in order to do anything.");
+                return;
             }
 
             foreach (var AAGetter in state.LoadOrder.PriorityOrder.ArmorAddon().WinningOverrides())
@@ -35,21 +36,25 @@ namespace MaleAAGenerator
                 var AASetter = AAGetter.DeepCopy();
                 if(!Settings.Value.TargetMods.Contains(AASetter.FormKey.ModKey)) continue;
                 if(AASetter.WorldModel?.Female?.File is null) continue;
-                   
-                string pattern = "_1.nif|.nif";         
+                if(AASetter.BodyTemplate is null) return;    
+
+                string pattern = "_1.nif|_0.nif|.nif";         
            
                 var fileOrig = Regex.Split( AASetter.WorldModel.Female.File,pattern);
                 var fileNew = fileOrig[0] + Settings.Value.Suffix;
-
-                if(AASetter.WeightSliderEnabled.Female){
+                
+                if(AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Head)
+                || AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Hair)
+                || AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Circlet)){
+                    fileNew += ".nif";
+                }else{
                     AASetter.WeightSliderEnabled.Male = true;
                     fileNew += "_1.nif";
-                }else{
-                    fileNew += ".nif";
                 }
+                
                 AASetter.WorldModel.Male = AASetter.WorldModel.Female.DeepCopy();
                 AASetter.WorldModel.Male.File = fileNew;
-                System.Console.WriteLine($"Set {AASetter.EditorID} mesh to {fileNew}");
+                System.Console.WriteLine($"{AASetter.EditorID}: Set Mesh To {fileNew}");
                 state.PatchMod.ArmorAddons.Set(AASetter);
             }
         }
