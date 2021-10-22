@@ -36,15 +36,14 @@ namespace MaleAAGenerator
                 var AASetter = AAGetter.DeepCopy();
                 if(!Settings.Value.TargetMods.Contains(AASetter.FormKey.ModKey)) continue;
                 if(AASetter.WorldModel?.Female?.File is null) continue;
-                if(AASetter.BodyTemplate is null) return;    
+                if(AASetter.BodyTemplate is null) continue;    
 
                 string pattern = "_1.nif|_0.nif|.nif";         
            
                 var fileOrig = Regex.Split( AASetter.WorldModel.Female.File,pattern);
                 var fileNew = fileOrig[0] + Settings.Value.Suffix;
                 
-                if(AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Head)
-                || AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Hair)
+                if(AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Hair)
                 || AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Circlet)){
                     fileNew += ".nif";
                 }else{
