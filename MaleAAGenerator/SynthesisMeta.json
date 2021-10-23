@@ -1,0 +1,8 @@
+{
+    "Nickname": "MaleAAGenerator",
+    "Visibility": "Visible",
+    "OneLineDescription": "Automates plugin generation for female to male armor conversion.",
+    "LongDescription": "Comes with a settings menu to select the mods to be updated and a configurable suffix.",
+    "PreferredAutoVersioning": "Default",
+    "RequiredMods": []
+  }
