@@ -11,6 +11,7 @@ namespace MaleAAGenerator
     public class Program
     {
         static Lazy<Settings> Settings = null!;
+        static string pattern = "_1.nif|_0.nif|.nif";
         public static Task<int> Main(string[] args)
         {
             return SynthesisPipeline.Instance
@@ -38,24 +39,65 @@ namespace MaleAAGenerator
                 if(AASetter.WorldModel?.Female?.File is null) continue;
                 if(AASetter.BodyTemplate is null) continue;    
 
-                string pattern = "_1.nif|_0.nif|.nif";         
-           
+                bool helmet = Program.IsHelmet(AASetter);
+                bool circlet = Program.IsCirclet(AASetter);
+                if(helmet && !Settings.Value.patchHelmets) continue;
+                if(circlet && !Settings.Value.patchCirclets) continue;
+
                 var fileOrig = Regex.Split( AASetter.WorldModel.Female.File,pattern);
                 var fileNew = fileOrig[0] + Settings.Value.Suffix;
                 
-                if(AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Hair)
-                || AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Circlet)){
+                if(helmet ||circlet){
                     fileNew += ".nif";
                 }else{
                     AASetter.WeightSliderEnabled.Male = true;
                     fileNew += "_1.nif";
                 }
-                
+
                 AASetter.WorldModel.Male = AASetter.WorldModel.Female.DeepCopy();
                 AASetter.WorldModel.Male.File = fileNew;
                 System.Console.WriteLine($"{AASetter.EditorID}: Set Mesh To {fileNew}");
+
+                //1st Person Stuffs
+                if(Settings.Value.deleteFirstPerson && AASetter.FirstPersonModel?.Male?.File != null){
+                     AASetter.FirstPersonModel.Male.Clear();
+                     System.Console.WriteLine($"{AASetter.EditorID}: Dropped Male 1st Person Mesh");
+                }else if (Settings.Value.patchFirstPerson && AASetter.FirstPersonModel?.Female?.File != null)
+                {
+                    var file1stOrig = Regex.Split( AASetter.FirstPersonModel.Female.File,pattern);
+                    var file1stNew = fileOrig[0] + Settings.Value.Suffix + "_1.nif";
+                    AASetter.FirstPersonModel.Male = AASetter.FirstPersonModel.Female.DeepCopy();
+                    AASetter.FirstPersonModel.Male.File = fileNew;
+                     System.Console.WriteLine($"{AASetter.EditorID}: Set 1st Person Mesh To {file1stNew}");
+                }
+
                 state.PatchMod.ArmorAddons.Set(AASetter);
             }
+        }
+
+        public static bool IsHelmet(ArmorAddon AASetter)
+        {
+            if(AASetter.BodyTemplate is null) return false;
+            if(AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Body)) return false;
+
+            if(AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Hair))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool IsCirclet(ArmorAddon AASetter)
+        {
+            if(AASetter.BodyTemplate is null) return false;
+            if(AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Body)) return false;
+            if(AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Hair)) return false;
+
+            if( AASetter.BodyTemplate.FirstPersonFlags.HasFlag(BipedObjectFlag.Circlet))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
